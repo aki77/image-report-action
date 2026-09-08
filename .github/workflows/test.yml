@@ -1,0 +1,25 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      # Passing a directory to node --test (node --test test/) does not work on
+      # Node 21+ (positional arguments are treated as globs). Use an explicit glob.
+      - name: node --test
+        run: node --test 'test/**/*.test.mjs'

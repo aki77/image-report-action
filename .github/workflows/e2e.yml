@@ -1,0 +1,141 @@
+name: e2e
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Composite actions cannot declare permissions, so the caller must grant them.
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  e2e:
+    name: Dogfooding
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # setup-node is intentionally omitted. `uses: ./` should run on the
+      # runner's default Node, which is what users will have as well.
+
+      # --- Normal case: collect the fixture images and generate a report ------
+      - name: Generate report (fixture)
+        id: report
+        uses: ./
+        with:
+          path: test/fixtures/images
+          title: E2E fixture report
+          report-name: e2e-report.html
+
+      - name: Verify outputs
+        env:
+          REPORT_PATH: ${{ steps.report.outputs.report-path }}
+          IMAGE_COUNT: ${{ steps.report.outputs.image-count }}
+          ARTIFACT_URL: ${{ steps.report.outputs.artifact-url }}
+        run: |
+          set -euo pipefail
+
+          echo "report-path: ${REPORT_PATH}"
+          echo "image-count: ${IMAGE_COUNT}"
+          echo "artifact-url: ${ARTIFACT_URL}"
+
+          # The fixture has 7 images across 5 sections (. landscape mixed portrait 深い/階層/日本語ディレクトリ名)
+          test "${IMAGE_COUNT}" = '7'
+          test -f "${REPORT_PATH}"
+
+          # Compression actually ran
+          grep -q 'data:image/webp;base64,' "${REPORT_PATH}"
+
+          # SVG is not an input for cwebp, so it stays embedded as-is
+          grep -q 'data:image/svg+xml;base64,' "${REPORT_PATH}"
+
+          # No compressible format is left uncompressed (every PNG / JPEG becomes WebP)
+          if grep -q -e 'data:image/png;base64,' -e 'data:image/jpeg;base64,' "${REPORT_PATH}"; then
+            echo '::error::Uncompressed PNG / JPEG images remain in the report'
+            exit 1
+          fi
+
+          # Section count
+          sections="$(grep -c '<section>' "${REPORT_PATH}")"
+          test "${sections}" = '5'
+
+          # A Japanese directory name is used verbatim as the heading
+          grep -q '深い/階層/日本語ディレクトリ名' "${REPORT_PATH}"
+
+          # The Artifact URL is present (it is the only URL posted in the comment)
+          test -n "${ARTIFACT_URL}"
+
+          echo "OK: ${IMAGE_COUNT} images / ${sections} sections / $(stat -c%s "${REPORT_PATH}") B"
+
+      # --- No images: skip with a warning and let the job succeed -------------
+      # This is the second call in the same run, so use a different report-name.
+      # overwrite has no effect with archive: false and the file name becomes the
+      # Artifact name, so identical names would collide.
+      - name: Generate report (no images)
+        id: empty
+        uses: ./
+        with:
+          path: test/fixtures/empty
+          report-name: e2e-report-empty.html
+          # There are no images, so cwebp is not needed. Leaving the default true
+          # would waste a 12MB / 1.8s binary download.
+          compress: 'false'
+          comment: 'false'
+
+      - name: Verify outputs for the no-images case
+        env:
+          IMAGE_COUNT: ${{ steps.empty.outputs.image-count }}
+          REPORT_PATH: ${{ steps.empty.outputs.report-path }}
+        run: |
+          set -euo pipefail
+          test "${IMAGE_COUNT}" = '0'
+          test -z "${REPORT_PATH}"
+          echo 'OK: the job succeeds even with no images'
+
+      # --- No-compression case ------------------------------------------------
+      # Verifies that a report with images can be generated while the cwebp fetch
+      # step is skipped and IMAGE_REPORT_CWEBP_PATH is passed as an empty string.
+      - name: Generate report (no compression)
+        id: raw
+        uses: ./
+        with:
+          path: test/fixtures/images
+          report-name: e2e-report-raw.html
+          compress: 'false'
+          comment: 'false'
+
+      - name: Verify outputs for the no-compression case
+        env:
+          IMAGE_COUNT: ${{ steps.raw.outputs.image-count }}
+          REPORT_PATH: ${{ steps.raw.outputs.report-path }}
+        run: |
+          set -euo pipefail
+          test "${IMAGE_COUNT}" = '7'
+          test -f "${REPORT_PATH}"
+          # Nothing was compressed, so there is no webp and the original png/jpeg are embedded as-is
+          ! grep -q 'data:image/webp;base64,' "${REPORT_PATH}"
+          grep -q 'data:image/png;base64,' "${REPORT_PATH}"
+          echo 'OK: a report with images can be generated with compress: false'
+
+      # --- Missing directory case ---------------------------------------------
+      # This takes the same early-return path as the no-images case, so the
+      # compress branch is never reached here (compress: false is really
+      # exercised by the no-compression case above).
+      - name: Generate report (missing directory)
+        id: missing
+        uses: ./
+        with:
+          path: test/fixtures/does-not-exist
+          report-name: e2e-report-missing.html
+          compress: 'false'
+          comment: 'false'
+
+      - name: Verify outputs for the missing directory case
+        env:
+          IMAGE_COUNT: ${{ steps.missing.outputs.image-count }}
+        run: |
+          set -euo pipefail
+          test "${IMAGE_COUNT}" = '0'
+          echo 'OK: the job succeeds even when the directory does not exist'

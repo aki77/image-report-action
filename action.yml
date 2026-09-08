@@ -1,0 +1,258 @@
+name: 'Image Report'
+description: 'Collects images under a directory into a single HTML report with base64-embedded images, uploads it as an Artifact, and comments on the PR.'
+author: 'aki77'
+
+branding:
+  icon: 'image'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'Root directory to scan. Images are collected recursively from below it.'
+    required: true
+  title:
+    description: 'Report heading. Defaults to the repository name.'
+    required: false
+    default: ''
+  report-name:
+    description: >-
+      Report file name. With archive: false the file name becomes the Artifact name,
+      so always use a different name when calling this action more than once in the same run.
+    required: false
+    default: 'image-report.html'
+  normalize-captions:
+    description: 'Strip leading sequence numbers from captions and turn underscores into spaces.'
+    required: false
+    default: 'true'
+  compress:
+    description: 'Convert images to WebP with cwebp before embedding. Set to false to embed the originals.'
+    required: false
+    default: 'true'
+  compress-width:
+    description: 'Maximum width in px when compressing. Smaller images are not upscaled.'
+    required: false
+    default: '900'
+  compress-quality:
+    description: 'cwebp quality (1-100).'
+    required: false
+    default: '82'
+  retention-days:
+    description: 'Artifact retention in days. When empty, the repository setting is used.'
+    required: false
+    default: ''
+  comment:
+    description: 'Comment a link to the report on the PR for pull_request events.'
+    required: false
+    default: 'true'
+  github-token:
+    description: 'Token used for the PR comment. The caller needs pull-requests: write in its permissions.'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  report-path:
+    description: 'Absolute path of the generated report HTML. Empty when no images were found.'
+    value: ${{ steps.generate.outputs.report-path }}
+  image-count:
+    description: 'Number of images included in the report.'
+    value: ${{ steps.generate.outputs.image-count }}
+  artifact-url:
+    description: 'URL of the uploaded Artifact. Empty when no images were found.'
+    value: ${{ steps.upload.outputs.artifact-url }}
+
+runs:
+  using: 'composite'
+  steps:
+    # -------------------------------------------------------------------------
+    # 1. Fetch cwebp
+    #
+    # ubuntu-latest ships with none of ImageMagick, cwebp or ffmpeg, so we fetch
+    # just cwebp at runtime from Google's official libwebp release.
+    # The URL, version and sha256 are all constants, so there is no ${{ }}
+    # expansion here and no room for script injection.
+    # -------------------------------------------------------------------------
+    - name: Fetch cwebp
+      id: cwebp
+      if: inputs.compress == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        VERSION='1.6.0'
+        BASE_URL='https://storage.googleapis.com/downloads.webmproject.org/releases/webp'
+
+        os="$(uname -s)"
+        if [ "$os" != 'Linux' ]; then
+          echo "::error::image-report-action supports compress: true on Linux runners only (detected: ${os}). Use an ubuntu-latest runner, or set compress: false."
+          exit 1
+        fi
+
+        arch="$(uname -m)"
+        case "$arch" in
+          x86_64)         platform='linux-x86-64'; sha256='1c5ffab71efecefa0e3c23516c3a3a1dccb45cc310ae1095c6f14ae268e38067' ;;
+          aarch64|arm64)  platform='linux-aarch64'; sha256='69f5eebe203e0f3942fe37986209a1725741be19c152950a4283b376c95ec798' ;;
+          *)
+            echo "::error::Unsupported CPU architecture: ${arch} (supported: x86_64 / aarch64). Set compress: false to generate the report without compression."
+            exit 1
+            ;;
+        esac
+
+        dir="libwebp-${VERSION}-${platform}"
+        tarball="${RUNNER_TEMP}/${dir}.tar.gz"
+
+        echo "Fetching libwebp ${VERSION} (${platform})"
+        curl -fsSL --retry 3 --retry-delay 2 -o "$tarball" "${BASE_URL}/${dir}.tar.gz"
+
+        # Fail here if the sha256 does not match (no fallback)
+        echo "${sha256}  ${tarball}" | sha256sum -c -
+
+        # Extract only the cwebp binary rather than the whole tar (4.9MB extracted)
+        tar -xzf "$tarball" -C "$RUNNER_TEMP" --strip-components=2 "${dir}/bin/cwebp"
+        rm -f "$tarball"
+
+        chmod +x "${RUNNER_TEMP}/cwebp"
+        echo "path=${RUNNER_TEMP}/cwebp" >> "$GITHUB_OUTPUT"
+
+    # -------------------------------------------------------------------------
+    # 2. Generate the report
+    #
+    # Pass every value through env:. Expanding ${{ }} inside the run: body would
+    # let user input (title / path) take over the shell.
+    # Write the output to runner.temp so the workspace stays clean.
+    # -------------------------------------------------------------------------
+    - name: Generate report
+      id: generate
+      shell: bash
+      run: node "${GITHUB_ACTION_PATH}/src/generate-report.mjs"
+      env:
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+        IMAGE_REPORT_PATH: ${{ inputs.path }}
+        # Fall back to the repository name when title is empty. We resolve it here
+        # because the fallback in generate-report.mjs is GITHUB_REPOSITORY
+        # (owner/repo), which is too verbose for a heading.
+        IMAGE_REPORT_TITLE: ${{ inputs.title || github.event.repository.name }}
+        IMAGE_REPORT_NAME: ${{ inputs.report-name }}
+        IMAGE_REPORT_OUTPUT_DIR: ${{ runner.temp }}
+        IMAGE_REPORT_NORMALIZE_CAPTIONS: ${{ inputs.normalize-captions }}
+        IMAGE_REPORT_COMPRESS: ${{ inputs.compress }}
+        IMAGE_REPORT_COMPRESS_WIDTH: ${{ inputs.compress-width }}
+        IMAGE_REPORT_COMPRESS_QUALITY: ${{ inputs.compress-quality }}
+        # With compress: false that step is skipped and this is an empty string.
+        # generate-report.mjs only requires it when compress is true.
+        IMAGE_REPORT_CWEBP_PATH: ${{ steps.cwebp.outputs.path }}
+
+    # -------------------------------------------------------------------------
+    # 3. Upload as an Artifact
+    #
+    # archive: false accepts a single file only. A glob would resolve to multiple
+    # files and fail, so we pass the actual path produced by step 2.
+    # overwrite has no effect with archive: false, so we do not use it (uniqueness
+    # is handled through report-name instead).
+    # -------------------------------------------------------------------------
+    - name: Upload artifact
+      id: upload
+      if: success() && steps.generate.outputs.image-count != '0'
+      uses: actions/upload-artifact@v7
+      with:
+        # name is ignored with archive: false (the file name becomes the Artifact
+        # name), so we omit it. The Artifact name is report-name = the file name.
+        path: ${{ steps.generate.outputs.report-path }}
+        archive: false
+        # When empty, upload-artifact treats it as unset and the repository's
+        # default retention applies (v7's getInputs guards it with
+        # `if (retentionDaysStr)`). No conditional is needed here.
+        retention-days: ${{ inputs.retention-days }}
+
+    # -------------------------------------------------------------------------
+    # 4. PR comment
+    #
+    # Find the existing comment by its marker and update it in place, so comments
+    # do not pile up on every push.
+    # On fork PRs the token is read-only and this returns 403. In that case we
+    # downgrade to a warning and let the job succeed (the Artifact is already
+    # uploaded).
+    #
+    # Events other than pull_request are detected at the top of script: rather
+    # than in the step's if:. A separate notice-only step with the inverted
+    # condition would create an obligation to keep the two conditions in sync,
+    # and would add step startup overhead.
+    # -------------------------------------------------------------------------
+    - name: Comment on PR
+      if: >-
+        success() &&
+        inputs.comment == 'true' &&
+        steps.generate.outputs.image-count != '0'
+      uses: actions/github-script@v9
+      env:
+        # Keep this identical to the expression used for the report's <h1>.
+        # If only one of them were resolved, the heading and the comment would
+        # show different values when title is unset.
+        REPORT_TITLE: ${{ inputs.title || github.event.repository.name }}
+        REPORT_NAME: ${{ inputs.report-name }}
+        ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        IMAGE_COUNT: ${{ steps.generate.outputs.image-count }}
+        # On pull_request, github.sha is the merge commit's SHA. The PR head is
+        # what indicates how fresh the report is, so use head.sha.
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          // We cannot comment outside pull_request, so notify and bail out
+          if (context.eventName !== 'pull_request') {
+            core.notice(
+              `Skipped the PR comment because this is not a pull_request event (event: ${context.eventName}). ` +
+                'The report has already been uploaded as an Artifact.',
+            );
+            return;
+          }
+
+          // Read user input from process.env instead of expanding it into script:
+          const reportName = process.env.REPORT_NAME;
+          const title = process.env.REPORT_TITLE;
+          const artifactUrl = process.env.ARTIFACT_URL;
+          const imageCount = process.env.IMAGE_COUNT;
+          const shortSha = (process.env.HEAD_SHA || '').slice(0, 7);
+
+          // Including report-name keeps multiple reports from overwriting each other's comments
+          const marker = `<!-- image-report-action:${reportName} -->`;
+
+          const body =
+            `${marker}\n### ${title}\n\n` +
+            `[📄 Open report](${artifactUrl})\n\n` +
+            `${imageCount} image${imageCount === '1' ? '' : 's'} / commit \`${shortSha}\`\n\n` +
+            '<sub>Viewing requires signing in to GitHub with read access to this repository. ' +
+            'The link expires once the Artifact retention period is over.</sub>';
+
+          const { owner, repo } = context.repo;
+          const issue_number = context.issue.number;
+
+          try {
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find(
+              (c) => c.body?.includes(marker) && c.user?.type === 'Bot',
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              core.info(`Updated the existing comment: ${existing.html_url}`);
+            } else {
+              const { data } = await github.rest.issues.createComment({ owner, repo, issue_number, body });
+              core.info(`Created a comment: ${data.html_url}`);
+            }
+          } catch (error) {
+            if (error.status === 403) {
+              core.warning(
+                'No permission to comment on the PR (this may be a PR from a fork). ' +
+                  'The Artifact is already uploaded, so it can be reached from the Actions run page.',
+              );
+            } else {
+              throw error;
+            }
+          }
+

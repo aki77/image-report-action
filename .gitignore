@@ -1,0 +1,14 @@
+# Node
+node_modules/
+npm-debug.log*
+.npm/
+
+# Generated files
+*.html.tmp
+/tmp/
+
+# Editors / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
