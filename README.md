@@ -4,6 +4,16 @@ A GitHub Action that recursively collects images under a given directory, genera
 
 Review CI screenshots **right in the browser — no download, no unzip**.
 
+## What the report looks like
+
+<a href="docs/screenshot.png"><img src="docs/screenshot.png" width="420" alt="Example report"></a>
+
+A real report generated from [`test/fixtures/images`](test/fixtures/images) — click the thumbnail to enlarge, or open the source file at [`docs/example-report.html`](docs/example-report.html). The images are gradient placeholders, so the point is the layout, not the pictures: a table of contents, one section per directory, `(root)` for images directly under the scanned path, and natural sort (`1_wide` < `2_wide` < `10_wide`).
+
+The screenshot is cropped to the first two sections; the remaining three — including a non-ASCII one (`深い/階層/日本語ディレクトリ名`) — are in the HTML.
+
+GitHub renders `.html` as source rather than as a page, so to see the real thing — including the lightbox — clone the repo and open the file in a browser.
+
 ## Why
 
 Neither the `gh` CLI nor the GitHub API can attach images to a PR body. Until now, CI screenshots could only be published as zipped Artifacts, and reviewers had to download, unzip, and open them one by one — so in practice, nobody looked at them.
@@ -175,6 +185,27 @@ IMAGE_REPORT_PATH=test/fixtures/images \
 IMAGE_REPORT_OUTPUT_DIR=/tmp \
 IMAGE_REPORT_CWEBP_PATH="$(command -v cwebp)" \
   node src/generate-report.mjs
+```
+
+### Regenerating the example report
+
+`docs/example-report.html` and `docs/screenshot.png` are committed, so refresh them whenever the HTML template changes:
+
+```bash
+IMAGE_REPORT_PATH=test/fixtures/images \
+IMAGE_REPORT_OUTPUT_DIR=docs \
+IMAGE_REPORT_NAME=example-report.html \
+IMAGE_REPORT_TITLE=image-report-action \
+IMAGE_REPORT_CWEBP_PATH="$(command -v cwebp)" \
+  node src/generate-report.mjs
+
+# macOS + Google Chrome. Chrome captures the viewport, so the window size is the crop.
+# 820 is the narrowest width that still fits the landscape row in three columns;
+# 1130 cuts just below its captions. The README scales this 2x capture down to 420px.
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --headless=new --hide-scrollbars --force-device-scale-factor=2 \
+  --window-size=820,1130 --screenshot=docs/screenshot.png \
+  "file://$PWD/docs/example-report.html"
 ```
 
 ## License

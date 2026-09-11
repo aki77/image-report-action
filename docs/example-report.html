@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>image-report-action</title>
+<style>
+:root { --w: 240px; --ratio: 3 / 4; --fg: #24292f; --muted: #57606a; --bg: #ffffff; --line: #d0d7de; --thumb-bg: #f6f8fa; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px; background: var(--bg); color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  line-height: 1.6; }
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.1rem; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+.meta { color: var(--muted); font-size: .875rem; margin: 0 0 24px; }
+.toc { background: var(--thumb-bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; }
+.toc h2 { font-size: .875rem; margin: 0 0 8px; border: 0; padding: 0; font-family: inherit; color: var(--muted); }
+.toc ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.toc a { color: #0969da; text-decoration: none; font-size: .875rem; word-break: break-all; }
+.toc a:hover { text-decoration: underline; }
+.count { color: var(--muted); font-weight: normal; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--w), 1fr)); gap: 16px; }
+figure { margin: 0; }
+.thumb { aspect-ratio: var(--ratio); display: grid; place-items: center; overflow: hidden;
+  background: var(--thumb-bg); border: 1px solid var(--line); border-radius: 6px;
+  cursor: zoom-in; padding: 0; width: 100%; }
+.thumb img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+figcaption { font-size: .8125rem; margin-top: 6px; word-break: break-all; }
+figcaption .path { display: block; color: var(--muted); font-size: .6875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+dialog { max-width: 96vw; max-height: 96vh; padding: 0; border: 0; border-radius: 6px;
+  background: transparent; overflow: visible; }
+dialog:focus, dialog:focus-visible { outline: none; }
+dialog::backdrop { background: rgba(0, 0, 0, .8); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; object-fit: contain;
+  border-radius: 6px; background: var(--thumb-bg); }
+dialog .path { display: block; margin-top: 8px; color: #fff; font-size: .75rem; text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+.empty { color: var(--muted); }
+</style>
+</head>
+<body>
+<h1>image-report-action</h1>
+<p class="meta">7 images / 5 sections</p>
+<nav class="toc">
+<h2>Contents</h2>
+<ul>
+<li><a href="#sec-0">(root)</a> <span class="count">(1)</span></li>
+<li><a href="#sec-1">landscape</a> <span class="count">(3)</span></li>
+<li><a href="#sec-2">mixed</a> <span class="count">(1)</span></li>
+<li><a href="#sec-3">portrait</a> <span class="count">(1)</span></li>
+<li><a href="#sec-4">深い/階層/日本語ディレクトリ名</a> <span class="count">(1)</span></li>
+</ul>
+</nav>
+<section>
+<h2 id="sec-0">(root) <span class="count">(1)</span></h2>
+<div class="grid">
+<figure>
+<button type="button" class="thumb" data-path="001_root_level.png" title="001_root_level.png">
+<img src="data:image/webp;base64,UklGRh4EAABXRUJQVlA4IBIEAABQLQCdASqQASwBPmEwlkikIqIhICgAgAwJaW7hdy8CxL4/5f0/+4F8A/VG6//T+1fwGNAnwP/bsA+ITgH/jL4ADz6G7z1FT956ip+89RUzs+T0lFmG/8s5FNZdlv5+GOUZPJD/iklnIprLst/PwxyjT0lFeMKJRx//////9WX+n/g+4/yiZEFWTbYCrJtsBVlmkFI+7P/BECfvPUVWokK1EhP3meXlGnpKLMNuvghSSzkU1l2W/hRWPEdHvPUVP3nqKn7zOIiwjGERYRjCIsIxhEN0msuyyY5BJVdlv5+GOUaekorwB3UpE8T6xX4frDEmEG/Do4jkElV2WQ8Q8SbujJExdOA+oLBEXcj+TtwYfeoiOS2SMpdd/3d5m6RlLsEXZGXSeRZSP0R1k28ww/Tji6JsqC33x1k22AqybbAyqhCI0fonVXZ///////5JZ3/6gYgxe9A0AERdyP5O3Bh8nbgw+M+KKn7z1FT956ip+89NIAD+9XnJ/+Wf/n9+83+vP/+QY/JT7ef5Ouua6mHfyqxMjyvCowNq6xj/pnx/9OMElUn/8EH988FOef6BOKR4pAC00RPMxNR9FBD5OCdoPiHwB+0DJd9uiFdTXacWsHCVs3/F3ZTewsRqe7YeWG3INNOt780nnpwMAXH5RiTHV4GbJSuLsj0ed1FIoZ12ZUG7bkTecFjmZK7s9hwVRAv3iF4ytv76FnefwFW0UlGL0lXrOoAjTJ1d2aOQwxMcxykfaJyf2EqYwFF9qmXNZzauU719Ype1qq387uTqP+j1S+RYedYy2IEXiEUGz1S/xHcv1S7uX6pd3L9Uu7l+qXdy/VLu5fql3oCDkS13lCPQPZiHdO84520QgkI6ydrQzefRT3ByvdRKe4OV7qXfy/hIb6Amn50Ag7zTytjstX/E9wX0L6vpa341geO9rTYM1AncoG3oseJWITg1Qzh+mFT3ZD2VxI6fwzjocBd8dVbHlhZHrlgAfvJJWdLvofJKyyMBaoaQGt3UI08EF3yMgHFP48DfPciSx6jW9CdcaplIE8fjDOs6fBAYp99Bks/ffbIHAreIJU3DIeI00578fL/FJnhty7SFKGYocAxYaITvbAp4vO9sCnUeum8a0FpAJwlAp/7VJQSl0rkEyRv63mORrhrCqorgClC0zpaxSAfLNK1CQjODF2IcB54yCZjZpc8ZBMRvLulzxjq5JiNxRydNKph6W2sQsjPUjbr+BpCl6l+VLI1Nf0ywP5c+kuXisOC/8PsOLyIW92bOtAx4EFa7za1oMrGZ6vbxsnF2NHTw7kTSUor99TJ5Tw7kNlKCg5oOaDmrejupgYocUOBYTJi+Fj9bzHM/2EgM+6L1xNNMxJkuTsaM1Peg7NG0F9+8sQAA" alt="root level" loading="lazy" decoding="async">
+</button>
+<figcaption title="001_root_level.png">root level<span class="path">001_root_level.png</span></figcaption>
+</figure>
+</div>
+</section>
+<section>
+<h2 id="sec-1">landscape <span class="count">(3)</span></h2>
+<div class="grid">
+<figure>
+<button type="button" class="thumb" data-path="landscape/1_wide.png" title="landscape/1_wide.png">
+<img src="data:image/webp;base64,UklGRpAFAABXRUJQVlA4IIQFAACQWACdASqEA+EAPmEwk0ikIqGhIAgggAwJaW7hd+h6JT6APmo2Of/YR/QD+J2H9zYqP+a2YJ//0aQ567u+un+f7u/IAzPiEmnpKrtOfgxyz0lV2nPwY5Z6Sq7Tn4Mcs9JVdpz8GOWekqu05+DHLPQuQE/xp6Sq7Tn4Mcs9JVdpz8GOWekqu05+DHLPSVXac/BjlnpKrtOfgxyz0Lc2rWW/oIhJp6Sq7Tn4Mcs9JVdpz8GOWekqu05+DHLPSVXac/BjlnpKrtN4PqV/ac/BjlnpKrtOfgxyz0lV2nPwY5Z6Sq7Tn4Mcs9JVdpz8GOWekqu057y+FrtOfgxyz0lV2nPwY5Z6Sq7Tn4Mcs9JVdpz8GOWekqu05+DHLPSVXac95fV2LJFpKrtOfgxyz0lV2nPwY5Z6Sq7Tn4Mcs9JVdpz8GOWekqu05+DHLPSVWAeRrFii00k87YQOssmONt9/Kyzyy4eeEmmccc2++oohEFBlnB52QOPzzf0EQk09JVdpz8GOWekqu05+DHLPSVXac/BjlnpKrtOfgxyz0lV2nPwH/gH1KORTWZb+giEmnpKrtOfgxyz0lV2nPwY5Z6Sq7Tn4Mcs9JVdpz8GOWeiiMYY+FrtOfgxyz0lV2nPwY5Z6Sq7Tn4Mcs9JVdpz8GOWekqu05+DHLPSVXac95fC12nPwY5Z6Sq7Tn4Mcs9JVdpz8GOWekqu05+DHLPSVXac/BjlnpKrtOe8vIYmoHSNHyrcE0dYqRk6WnDLusVIydLThl3WKkZOlpwy7rFSMnS04Zd1hx55v6CISaekqu05+DHLPSVXac/BjlnpKrtOfgxyz0lV2nPwY5Z6Sq7Tn4MU0nsKDKSKi7Lf0EQk09JVdpz8GOWekqu05+DHLPSVXac/BjlnpKrtOfgxyz0lNCTUor0UXl1024c2GupRXoovLrptw5sNdSivRReXXTbhzYUAA/v8TKZt/8DfZz7Nrb//10D//XQP/9Xo9mdnrn8ubo3RujdG6N0bo3RujdG6N0bo3RujdG6N0bo3RujdG6N0bo3RPJjozvOp7feZjJ5QAxF0AfzCIwRGCIwRGCIwRGCIwRGCIwRGCIwRGCIwRGCIwRGCIwRGCIwRGCIwSNNCeyyGhk8cfYAAAAAAAAAAAAApogSbZuktHgKbmAAAAAAAAAAAAAcMkj7Mohfa0ph0yplTKmVMqZUyplTKmVMqZUyplTKmVMqZUyplTKmVMqZUypo+ncFnE+WJyB80z1pT31IN89aU99SDfPWlPfUg3z1pT32bZbEpSxY5K2xcmdPnUDlwuBcFHzwjL6icGX1E4MvqJwZfUTgy+onBl9RODL6icGX1E4MvqJwZfUTgy+onBl9RODL6icGX1E4MvqMNo33zQTlfI8s7rTFenmmK9PNMV6eaYr080xXp6Wird545Xv+5fjEUnH7qRUipFSKkVIqRUipFSKkVIqRUipFSKkVIqRUipFSKkVjKDSlpU15QWyWEsJYSwlhLCWEsJYSwlhLCWEsJYSwlhLCWEsJYSwlhLCWEsKVBmvy47SOpjNbAKceJrAhFE1gQiiawIRRNYEIomsCEUTWBCKJrAhFE1gQiiawIRRNYEIomsCEUTWBCKJx0GheY+3VQjKZGrXaeEAAAAAmTDm0yA8E0pVHJhzaZAfBkkfZlD7NO+lpXcLi2kcW0ji2kcWmxKACW76ElGU/zKCUHC4XtVRW1za1FOUSgYi7CAlBwuF7VUVtc2tRTniKv6TF88Kdv6el97733vvfe+997733vvfe+997733vvfe+997733vvfe+9978kzWJOG/a1jajFYR5xdHDwlt+gmygiHhLb9BNlBEPCW36CbKCIeEtv0E2UEQ8JbfoJsoIh4S2/IAAA==" alt="wide" loading="lazy" decoding="async">
+</button>
+<figcaption title="landscape/1_wide.png">wide<span class="path">landscape/1_wide.png</span></figcaption>
+</figure>
+<figure>
+<button type="button" class="thumb" data-path="landscape/2_wide.jpg" title="landscape/2_wide.jpg">
+<img src="data:image/webp;base64,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" alt="wide" loading="lazy" decoding="async">
+</button>
+<figcaption title="landscape/2_wide.jpg">wide<span class="path">landscape/2_wide.jpg</span></figcaption>
+</figure>
+<figure>
+<button type="button" class="thumb" data-path="landscape/10_wide.png" title="landscape/10_wide.png">
+<img src="data:image/webp;base64,UklGRhAFAABXRUJQVlA4IAQFAAAQVwCdASpYAiwBPmEwlkikIqIhIAgAgAwJaW7hd98B4nh/7lP16t/tX8WVQK+voEJ/l+nfsAU0p+89RU/eeoqfvPUVP3nqKn7z1FGMVXZb+fhjlGnpKLMNuvghSSzkU1l2W/n4Y5Rp1chKRWbgnsgVI1oT/iFfBcfYzRndSkVm4J7IFSFDt71EPeoh71EPeoh71EPeoh71EPeoh708NDHGBltrJ6SHwhROYbayekh8IUTmG2snpIePyq6zyjS4effOqus8o0uHn3zqrrPKNLh5982Xikje0UFkOL90e9TjzXqjJiiZqiQn8Rx6RhbW7IiPu6wRbCiFz/dYIthRC5/usEWwohc/3WCLYUQuf7rBFsKIXP91gi2FELn+6wRbCiFz/dYIthRC5/usEWwohc/3WCLYUQuf7rBFsKIXP/EJjX/OamEBhxahUGv+c1MIDDi1HfuHzfRosvGvU6K4U9ebOfp2Aj02AYB3H96W2HQ+vn7PUX0IsJRahUGv+c1ns6GoYkg90oFNXUx0gR6bALWtNsOh9fP20/BVhWd5S9UzrfHyTOt8fJM63x8kzrfHyTOt8fJM63452NEo9sMvcz1Cc6yy9zPUJzrLL3M9QnOsswIcEHKNPSUWYbdfBCklnIprLst/PwxyjT0lFmG3RCh5+GOUaekosw26+CFJLORTWXZb+fhjlGnpKK9+YbdfBCklnIprLst/PwxyjT0lFmG3XwQpJZyKVVAqecgQtJ5zSa5bcHmNbxfkFhmUzmk1y24PMa3i/ILDMpnNJrltweY8uztnzD6qIAOl+PcaioXymMjgHS/HuNRUL5TGRwDpfnFvy5Znq3KFrVlCc6yy9zPUJzrLL3M9QnOstNF35fHlGvXY8o17meoTnWWXuZ6hOdZZe5nqG8RfUJzrLL3M9QnOssvcz1Cc6yy9zPUJzrLL1gAA/v++tM8//pz3/8c9//HPett/Z7vK8Ndagn7MxF7GGGFTT0D19IVF5XCGiX1KgNYi9jDDEqRvSrIcQYcOiSl+l82i+/hECAJlHdaK3fhXJzR8nC8HAPnz58+fPnz58+fPnz58+fPnz58+fPnz58+fPnz6EI6Qbyzhei25uOjXcfIMS4Bhs0eGbm46Ndx8gxLgGGzWF3y75n1lVTC+SxQCKWttigEUtbbFAIpa22KARS1tsUAilrbYoBFLW2xQCKWttigEUtbbFDqBpyYR1eC22/mHPJ2Q0h08tZPmHPJ4DQwqg5z+YrIJ21VwwoWbMloqJwY5vADyrtGTPoTR7StdwC6sNQTztOfcj04llcCLuVl1VmFgKhQ9tl/VJw2EZW7D+/LXK0fAAAAAAAAABW/lV02SgZWalqD67v6AErloBzUJ5ZK+B4cx5qzk/cGeHMeas5QJixcvBoAAAAAAAAAyAt+vPzFLK2aGoProQAAAAB3aQRulGwAAAAAAAAvEX4WeFADOQYZYC9NRSprMP/msw/+azD/5rMP/msw/+azD/5rMP/msw/+azD/5rMRARfqSUAAAAAAAAQTo1ff6EU646DXR9V2r9rp1EwnYJbcAG70f2tOomE7BLbgA3ej+1p1EwnYJbcAG70f84yGOS5oemgod7I9cb0xUnYdQur6hdX1C6vqGgjIaBiPPnchh5MNK/xTvrxQeyAjXntFAAAAEV3N6Bfl49QWvFi1DRl2NH7iFRtO2WPIA93J0QAAAAAAAAAA=" alt="wide" loading="lazy" decoding="async">
+</button>
+<figcaption title="landscape/10_wide.png">wide<span class="path">landscape/10_wide.png</span></figcaption>
+</figure>
+</div>
+</section>
+<section>
+<h2 id="sec-2">mixed <span class="count">(1)</span></h2>
+<div class="grid">
+<figure>
+<button type="button" class="thumb" data-path="mixed/icon.svg" title="mixed/icon.svg">
+<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCI+CiAgPHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIxMiIgZmlsbD0iI2Y2ZjhmYSIgc3Ryb2tlPSIjZDBkN2RlIi8+CiAgPGNpcmNsZSBjeD0iNjAiIGN5PSI0NiIgcj0iMjAiIGZpbGw9IiM0YTkwZDkiLz4KICA8cGF0aCBkPSJNMjQgOTYgTDUyIDYyIEw3MiA4MiBMOTIgNjYgTDk2IDk2IFoiIGZpbGw9IiM0YWQ5OGYiLz4KPC9zdmc+Cg==" alt="icon" loading="lazy" decoding="async">
+</button>
+<figcaption title="mixed/icon.svg">icon<span class="path">mixed/icon.svg</span></figcaption>
+</figure>
+</div>
+</section>
+<section>
+<h2 id="sec-3">portrait <span class="count">(1)</span></h2>
+<div class="grid">
+<figure>
+<button type="button" class="thumb" data-path="portrait/tall.png" title="portrait/tall.png">
+<img src="data:image/webp;base64,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" alt="tall" loading="lazy" decoding="async">
+</button>
+<figcaption title="portrait/tall.png">tall<span class="path">portrait/tall.png</span></figcaption>
+</figure>
+</div>
+</section>
+<section>
+<h2 id="sec-4">深い/階層/日本語ディレクトリ名 <span class="count">(1)</span></h2>
+<div class="grid">
+<figure>
+<button type="button" class="thumb" data-path="深い/階層/日本語ディレクトリ名/画面_表示されること.png" title="深い/階層/日本語ディレクトリ名/画面_表示されること.png">
+<img src="data:image/webp;base64,UklGRsADAABXRUJQVlA4ILQDAACQMQCdASqQASwBPmEwlkikIyIhICgAgAwJaW7hdyMTsfzf+wH8nan89/QJ8D/h090v6vyB9ACmni6J0hfnXTZcSchyYfpnRy8fhjlGnpKLMNuvghSSzkU1eirwo4j7usEWwohc/3WCLYUQuf7rBFsKIXP91gi2FELn+6wRbCiFz/dYIthRC5/usEWwohc/8TRS7Lfz8Mco09JRZht18EKSVLqEip+89RU/eeoqfvPNSsoxRp6SizDbr4IUks5FNZdj6jkElV2W/n4Y5Rp6SizDbr4IRwCOsm2wFWTbYCrJtsAjJP0R1k22AqybbAVZNZ8X+y26+CFJLORTWXZb+fhjlGTyQst/PwxyjT0lFmG3XwQpJZtRYIiwjGERYRjCIsIxfxPskv6w6yS/rDrJL+sOskv6w6yTFZVipyjXuZ6hOdZZe5nqE51o2ta5Rr3M9QnOssvcz1Cc6y00REQyIiIiGREREQyKKQiIiIiGREREQyIiJ93D+nZZhDMda/6hPo8AbYofIP4FlT956ip+89RU/eeokQAA/v9sQYf94Pod9DkA//r8X/+vxf/6099oLqZHcDg/2uPGmQ8JdYvieQ8jcmmVBfMLXNeUK4O7I2CQGKdjJTh2oOak4/9ps9FvBpJZeXaxaef+zRYP+zR+hOmuEGtgQc4yAAAAAAiTFy7q3JHJ+zsfEBbVxZ6c1q1mePHolSUvAK00hY1MhKYAFS/CwMAAAAAAAAPka07b0ves1+vgZT1XB1Zr9fAynqwRrTiJIVxnpK1C7e0L1Z4PuOherPB9x0L1Z4PuOherPB9x0L1Z4PuOszMjvAsJpe22HC4B2q/5iV+SLJ+j+ErgbWXk/VKqwpwL2vySedJNA2wTJ/TMU4aU0CbRg3Mphtqx0/eXpKub1INdx7/tenjPY0sFSfoCthSJOjA4juk8lSfhF/GxwgfknAbSnAJd0lwJikFbHSMorx2vYy3dipCwZW9I9uwi17SXP7zaElz+82hJc/vOPhfoFaoAAAAAAAAAC4rV94Mt/RNyhY4IAAAABCRGZSwZhwUPJrXBA9BiWKx45ezaDEsVjzUdsdXYPqCXkahzyXgIHs4zrafj3ylDnkvAQPZxnW0/HvlKHPJeFgrRgflVUkZ+RUBxnEqqLgnCzspEjLRoYzbzLluEfBHas6ZpjsLi2iwIy3cMzJabGaCYmR9SiA/ciKdBLIEAXvuTdmQwetEW/Z4KSPVxjWs+34p4KSOcUbWs+3u5V70OcS0i4Br7AAA=" alt="画面 表示されること" loading="lazy" decoding="async">
+</button>
+<figcaption title="深い/階層/日本語ディレクトリ名/画面_表示されること.png">画面 表示されること<span class="path">深い/階層/日本語ディレクトリ名/画面_表示されること.png</span></figcaption>
+</figure>
+</div>
+</section>
+<dialog id="lightbox" closedby="any" aria-label="Enlarged view">
+<img alt="">
+<span class="path"></span>
+</dialog>
+<script>
+const dlg = document.getElementById('lightbox');
+const dlgImg = dlg.querySelector('img');
+const dlgPath = dlg.querySelector('.path');
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.thumb');
+  if (!btn) return;
+  const img = btn.querySelector('img');
+  dlgImg.src = img.src;
+  dlgImg.alt = img.alt;
+  dlgPath.textContent = btn.dataset.path;
+  dlg.showModal();
+});
+dlg.addEventListener('close', () => { dlgImg.removeAttribute('src'); });
+// light-dismiss fallback for browsers without closedby support (Safari, etc.)
+if (!('closedBy' in HTMLDialogElement.prototype)) {
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+}
+</script>
+</body>
+</html>
