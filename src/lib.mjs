@@ -368,6 +368,12 @@ dialog img { display: block; max-width: 96vw; max-height: 88vh; object-fit: cont
   border-radius: 6px; background: var(--thumb-bg); }
 dialog .path { display: block; margin-top: 8px; color: #fff; font-size: .75rem; text-align: center;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+dialog .nav { position: fixed; top: 50%; transform: translateY(-50%); width: 44px; height: 64px;
+  padding: 0; border: 0; border-radius: 8px; background: rgba(0, 0, 0, .55); color: #fff;
+  font-size: 2rem; line-height: 1; cursor: pointer; }
+dialog .prev { left: 8px; }
+dialog .next { right: 8px; }
+dialog .nav:disabled { opacity: .25; cursor: default; }
 .empty { color: var(--muted); }
 `.trim();
 
@@ -376,14 +382,33 @@ const SCRIPT = `
 const dlg = document.getElementById('lightbox');
 const dlgImg = dlg.querySelector('img');
 const dlgPath = dlg.querySelector('.path');
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.thumb');
-  if (!btn) return;
+const thumbs = Array.from(document.querySelectorAll('.thumb'));
+const prevBtn = dlg.querySelector('.prev');
+const nextBtn = dlg.querySelector('.next');
+let current = -1;
+function show(i) {
+  if (i < 0 || i >= thumbs.length) return;
+  current = i;
+  const btn = thumbs[i];
   const img = btn.querySelector('img');
   dlgImg.src = img.src;
   dlgImg.alt = img.alt;
   dlgPath.textContent = btn.dataset.path;
-  dlg.showModal();
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === thumbs.length - 1;
+}
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.thumb');
+  if (!btn) return;
+  show(thumbs.indexOf(btn));
+  if (!dlg.open) dlg.showModal();
+});
+prevBtn.addEventListener('click', () => show(current - 1));
+nextBtn.addEventListener('click', () => show(current + 1));
+document.addEventListener('keydown', (e) => {
+  if (!dlg.open || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); show(current - 1); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); show(current + 1); }
 });
 dlg.addEventListener('close', () => { dlgImg.removeAttribute('src'); });
 // light-dismiss fallback for browsers without closedby support (Safari, etc.)
@@ -475,9 +500,11 @@ ${STYLES}
     yield '</div>\n</section>\n';
   }
 
-  yield `<dialog id="lightbox" closedby="any" aria-label="Enlarged view">
+  yield `<dialog id="lightbox" closedby="any" aria-label="Enlarged view" autofocus>
 <img alt="">
 <span class="path"></span>
+<button type="button" class="nav prev" aria-label="Previous image">‹</button>
+<button type="button" class="nav next" aria-label="Next image">›</button>
 </dialog>
 <script>
 ${SCRIPT}

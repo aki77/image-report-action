@@ -457,12 +457,15 @@ describe('buildHtml', () => {
     assert.ok(html.includes('decoding="async"'));
   });
 
-  test('includes the lightbox <dialog> but no arrow-key navigation', () => {
+  test('includes the lightbox <dialog> with prev/next navigation', () => {
     const html = render({ title: 't', sections: sampleSections });
     assert.ok(html.includes('<dialog id="lightbox"'));
     assert.ok(html.includes('showModal()'));
     assert.ok(html.includes('closedby="any"'));
-    assert.ok(!html.includes('ArrowRight'), 'prev/next navigation is out of scope for v1');
+    assert.ok(html.includes('ArrowLeft'));
+    assert.ok(html.includes('ArrowRight'));
+    assert.ok(html.includes('class="nav prev"'));
+    assert.ok(html.includes('class="nav next"'));
     assert.ok(!html.includes('<details'), 'collapsible sections are out of scope for v1');
     assert.ok(!html.includes('prefers-color-scheme'), 'dark mode is out of scope for v1');
   });
