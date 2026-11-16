@@ -96,7 +96,7 @@ A failing test is exactly when you want to see the screenshots, so adding `if: a
 - Section headings are the raw path relative to the root (`(root)` for images directly under it)
 - Sections and files are sorted in natural order (`2_foo` < `10_foo`, non-ASCII names included)
 - A table of contents at the top (section name + image count)
-- A thumbnail grid, plus a lightbox that shows the full-size image on click (close with Esc or by clicking the backdrop)
+- A thumbnail grid, plus a lightbox that shows the full-size image on click (close with Esc or by clicking the backdrop; move to the previous/next image with the ←/→ keys or the on-screen buttons — navigation spans sections and stops at the first/last image)
 - All CSS and JS is inlined — **a single, self-contained file**
 
 Supported extensions are `png` `jpg` `jpeg` `gif` `webp` `avif` `svg` `bmp`. Dotfiles, dot-directories, and symlinks are skipped.
